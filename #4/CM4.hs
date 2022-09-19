@@ -3,7 +3,8 @@
 --anagrammes
 --calculating all anagrams for one word
 
-import Data.List (delete, nub)
+import Data.List (nub)
+import Data.List (delete)
 
 an :: String -> [String];
 an "" = [""];
