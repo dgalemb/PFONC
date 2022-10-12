@@ -13,6 +13,7 @@ inver (x:xs) = inver xs ++ [x]
 
 --on prend l'entree
 --getting input
+echo :: IO ()
 echo = getLine >>= putStrLn 
 
 --la sortie est l'entree plus l'entree inversé
@@ -113,7 +114,6 @@ mlift2' _ Nothing _ = Nothing
 mlift2' _ _ Nothing = Nothing
 mlift2' f (Just x) (Just y) = Just $ f x y
 
-
 mevaluate :: (Eq a, Fractional a) => Expr a -> Maybe a
 mevaluate (Val x) = Just x
 mevaluate (Inc y) = mfmap (+1) $ mevaluate y
@@ -122,13 +122,13 @@ mevaluate (Neg y) = mfmap negate $ mevaluate y
 mevaluate (Inv y) = let my = mevaluate y
                     in if isZero my then Nothing
                                      else mfmap (1/) my
-mevaluate (Add y z) = mlift2 (+) (mevaluate y) (mevaluate z)
+mevaluate (Add y z) = mlift2' (+) (mevaluate y) (mevaluate z)
 mevaluate (Add3 x y z) = (Just add3) `apm` (mevaluate x) `apm` (mevaluate y) `apm` (mevaluate z)
-mevaluate (Sub y z) = mlift2 (-) (mevaluate y) (mevaluate z)
-mevaluate (Mul y z) = mlift2 (*) (mevaluate y) (mevaluate z)
+mevaluate (Sub y z) = mlift2' (-) (mevaluate y) (mevaluate z)
+mevaluate (Mul y z) = mlift2' (*) (mevaluate y) (mevaluate z)
 mevaluate (Div y z) = if isZero (mevaluate z)
                         then Nothing
-                        else mlift2 (/)  (mevaluate y) (mevaluate z)
+                        else mlift2' (/)  (mevaluate y) (mevaluate z)
 
 
 apm :: Maybe (a -> b) -> Maybe a -> Maybe b
@@ -136,8 +136,6 @@ apm Nothing _ = Nothing
 apm _ Nothing = Nothing
 apm (Just f) (Just x) = Just $ f x
 
-mlift2 :: (a -> b -> c) -> Maybe a -> Maybe b -> Maybe c
-mlift2 f = apm . mfmap f
 
-add3 :: (Num a) => a -> a -> a -> a
+add3 :: Num a => a -> a -> a -> a
 add3 x y z = x + y + z
