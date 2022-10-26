@@ -1,7 +1,12 @@
+{-# LANGUAGE TypeSynonymInstances, FlexibleInstances #-}
 import Data.Set (Set)
-import Data.List (transpose)
-import System.Random
 import qualified Data.Set as S
+import Data.List (transpose)
+import System.Random ( newStdGen, Random(randomRs) )
+import qualified Control.Monad.IO.Class
+
+--Manque Q6, Q16, Q19
+--Test final et jouer
 
 --Q1
 -- Mine, Drap
@@ -25,14 +30,15 @@ instance Show Grid where
     show :: Grid -> String
     show (Grid x) = unlines $ map (concatMap show) x
 
+
 --Q5
-randSet :: (Ord a, Ord b, Random a, Random b, RandomGen g1, RandomGen g2,
- Num a, Num b) => p -> g1 -> g2 -> a -> b -> Set [(a, b)]
-randSet n std1 std2 lig col = let ss = S.empty
-    in S.insert (take 1 (zip (randomRs (0, lig) std1) (randomRs (0, col) std2))) ss
+generate haut larg n = do 
+                    std1 <- newStdGen 
+                    std2 <- newStdGen
+                    return $ head (dropWhile ((\x -> length x /= n)) (scanl (\x y -> S.insert y x) (S.empty) (zip (randomRs (0, haut - 1) std1) (randomRs (0, larg - 1) std2))))
 
 --Q6
-
+grid haut larg ensemble = 
 
 --Q7
 mineIndic :: Num a => Cell -> a
@@ -87,9 +93,11 @@ updateCell n Selected = Selected
 --updateGrid cs xs = (map.map) (\(x, y) -> updateCell x) xs
 
 --Q17
+applyi :: (t -> t) -> Int -> [t] -> [t]
 applyi f i xs = take i xs ++ [f (xs !! i)] ++ drop (i+1) xs
 
 --Q18
+applyij :: (t -> t) -> Int -> Int -> [[t]] -> [[t]]
 applyij f i j xss = take i xss ++ [applyi f j (xss !! i)] ++ drop (i+1) xss
 
 
@@ -98,14 +106,30 @@ applyij f i j xss = take i xss ++ [applyi f j (xss !! i)] ++ drop (i+1) xss
 
 
 --Q20
+covIndic :: Num a => Cell -> a
 covIndic (Covered x y z) = 1
 covIndic Selected = 0
 covIndic (Uncovered x) = 0
 
 
 --Q21
+won :: (Eq a, Num a) => [[Cell]] -> a -> Bool
 won g n = foldl (+) 0 (map (sum . map covIndic) g) == n
 
 
 --Q22
+toggleFlag :: Cell -> Cell
 toggleFlag (Covered x y z) = Covered x y (not z)
+
+
+
+--Q23
+
+
+
+
+--Q24
+
+
+
+
