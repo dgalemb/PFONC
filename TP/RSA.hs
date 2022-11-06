@@ -2,6 +2,8 @@ import Data.Char (ord, chr)
 import Data.List (foldl')
 import Data.List.Split (chunksOf)
 
+-- All done
+
 --defining the main data type used and general fonctions, Q1
 --data Message = Message [Integer] deriving Show
 

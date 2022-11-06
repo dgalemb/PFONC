@@ -32,13 +32,18 @@ instance Show Grid where
 
 
 --Q5
-generate haut larg n = do 
+randSet :: (Control.Monad.IO.Class.MonadIO m, Ord a, Ord b, Random a,
+ Random b, Num a, Num b) =>
+a -> b -> Int -> m (Set (a, b))
+randSet haut larg n = do 
                     std1 <- newStdGen 
                     std2 <- newStdGen
                     return $ head (dropWhile ((\x -> length x /= n)) (scanl (\x y -> S.insert y x) (S.empty) (zip (randomRs (0, haut - 1) std1) (randomRs (0, larg - 1) std2))))
 
 --Q6
-grid haut larg ensemble = 
+--Create the grille based on randSet
+--grid haut larg ensemble = 
+
 
 --Q7
 mineIndic :: Num a => Cell -> a
@@ -89,6 +94,7 @@ updateCell n (Uncovered k) = Uncovered n
 updateCell n Selected = Selected
 
 --Q16
+--Update grid based on the new number of mines
 --updateGrid :: p -> [[(Int, b)]] -> [[Cell -> Cell]]
 --updateGrid cs xs = (map.map) (\(x, y) -> updateCell x) xs
 
@@ -102,7 +108,7 @@ applyij f i j xss = take i xss ++ [applyi f j (xss !! i)] ++ drop (i+1) xss
 
 
 --Q19
-
+--Uncover: Gives the grille obtained when exploring (clicking) one coordenate
 
 
 --Q20
@@ -124,12 +130,12 @@ toggleFlag (Covered x y z) = Covered x y (not z)
 
 
 --Q23
-
+--Loop1
 
 
 
 --Q24
-
+--Loop2
 
 
 

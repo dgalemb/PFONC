@@ -1,3 +1,5 @@
+--Il manque presque tout
+
 --Q1
 data Color = Rouge | Orange
 
