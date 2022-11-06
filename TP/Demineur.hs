@@ -6,7 +6,10 @@ import System.Random ( newStdGen, Random(randomRs) )
 import qualified Control.Monad.IO.Class
 
 --Manque Q6, Q16, Q19
+--Questions 6, 16, 19 need to be done
+
 --Test final et jouer
+--Do the final loops and play
 
 --Q1
 -- Mine, Drap

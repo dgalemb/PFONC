@@ -1,4 +1,5 @@
 --Il manque presque tout
+--Almost everything needs to be done
 
 --Q1
 data Color = Rouge | Orange

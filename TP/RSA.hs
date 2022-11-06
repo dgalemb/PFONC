@@ -3,6 +3,7 @@ import Data.List (foldl')
 import Data.List.Split (chunksOf)
 
 -- All done
+-- Tout complet
 
 --defining the main data type used and general fonctions, Q1
 --data Message = Message [Integer] deriving Show
