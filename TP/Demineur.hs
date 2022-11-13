@@ -4,6 +4,17 @@ import qualified Data.Set as S
 import Data.List (transpose)
 import System.Random ( newStdGen, Random(randomRs) )
 import qualified Control.Monad.IO.Class
+import System.IO
+-- import System.Random (StdGen, mkStdGen, next)
+import Data.Set (Set)
+import Data.List (transpose)
+--Windows bug Fix
+import Data.Char
+import Control.Monad(liftM)
+import Foreign.C.Types
+getHiddenChar = liftM (chr. fromEnum ) c_getch
+foreign import ccall unsafe "conio.h getch"
+    c_getch :: IO CInt
 
 --Manque Q6, Q16, Q19
 --Questions 6, 16, 19 need to be done
@@ -24,7 +35,7 @@ data Grid = Grid [[Cell]]
 instance Show Cell where
     show :: Cell -> String
     show Selected = show '.'
-    show (Uncovered n) = show '.'
+    show (Uncovered n) = show n
     show (Covered n _ True) = show 'P'
     show (Covered n _ False) = show 'o'
 
@@ -35,17 +46,15 @@ instance Show Grid where
 
 
 --Q5
-randSet :: (Control.Monad.IO.Class.MonadIO m, Ord a, Ord b, Random a,
- Random b, Num a, Num b) =>
-a -> b -> Int -> m (Set (a, b))
-randSet haut larg n = do 
-                    std1 <- newStdGen 
-                    std2 <- newStdGen
-                    return $ head (dropWhile ((\x -> length x /= n)) (scanl (\x y -> S.insert y x) (S.empty) (zip (randomRs (0, haut - 1) std1) (randomRs (0, larg - 1) std2))))
+
+--randSet haut larg n = do 
+--                   std1 <- newStdGen 
+--                    std2 <- newStdGen
+--                    return $ head (dropWhile ((\x -> length x /= n)) (scanl (\x y -> S.insert y x) (S.empty) (zip (randomRs (0, haut - 1) std1) (randomRs (0, larg - 1) std2))))
 
 --Q6
---Create the grille based on randSet
---grid haut larg ensemble = 
+grid :: Int -> Int -> [(Int,Int)] -> Grid
+grid h l m = Grid ([[ if (x, y) `elem` m then Covered 0 True False else Covered 0 False False | x <- [0..l-1]] | y <- [0..h-1]])
 
 
 --Q7
@@ -97,9 +106,8 @@ updateCell n (Uncovered k) = Uncovered n
 updateCell n Selected = Selected
 
 --Q16
---Update grid based on the new number of mines
---updateGrid :: p -> [[(Int, b)]] -> [[Cell -> Cell]]
---updateGrid cs xs = (map.map) (\(x, y) -> updateCell x) xs
+updateGrid :: Grid -> [[Int]] -> Grid
+updateGrid (Grid m) l = Grid (zipWith (\rC rN -> zipWith (\c n -> updateCell c n) rC rN) m l)
 
 --Q17
 applyi :: (t -> t) -> Int -> [t] -> [t]
@@ -111,8 +119,8 @@ applyij f i j xss = take i xss ++ [applyi f j (xss !! i)] ++ drop (i+1) xss
 
 
 --Q19
---Uncover: Gives the grille obtained when exploring (clicking) one coordenate
-
+uncover :: Int -> Int -> Grid -> Grid
+uncover i j (Grid m) = Grid (applyij (\(Covered a p b) -> Uncovered a) i j m)
 
 --Q20
 covIndic :: Num a => Cell -> a
@@ -133,12 +141,46 @@ toggleFlag (Covered x y z) = Covered x y (not z)
 
 
 --Q23
---Loop1
+loop :: Int -> Int -> Int -> Grid -> IO ()
+loop i j n b@( Grid xs) -- le paramètre b se décompose en (Grid xs)
+    | won n b = putStrLn " Victoire  !"
+    | otherwise = do
+        -- affiche la grille avec la case i, j sélectionnée
+        putStrLn $ show $ Grid $ applyij ( const Selected ) i j xs
+        -- lit un caractère
+        c <- getHiddenChar
+        case c of
+            'i' -> loop (max (i - 1) 0) j n b -- bouge le curseur vers le haut
+            'k' -> loop (min (i + 1) (length xs)) j n b -- bouge le curseur vers le bas
+            'j' -> loop i (max (j - 1) 0) n b -- bouge le curseur vers la gauche
+            'l' -> loop i (min (j + 1) (length (head xs))) n b -- bouge le curseur vers la droite
+            'f' -> loop i j n (Grid $ applyij toggleFlag i j xs) -- pose ou enlève un drapeau sur la case i, j
+            'u' -> if mineIndic (xs!!i!!j)==1
+                then putStrLn "Failure" --TODO putStrLn $ show (mineIndic (xs!!i!!j))
+                else loop i j n (uncover i j b)
+             -- découvre la case i, j; BOUM ?
+            otherwise -> loop i j n b -- ne fait rien
 
 
 
 --Q24
---Loop2
-
+main :: IO ()
+main = do
+    -- désactive l’attente de la touche entrée pour l’acquisition
+    hSetBuffering stdin NoBuffering
+    -- désactive l’écho du caractère entré sur le terminal
+    hSetEcho stdin False
+    -- récupère deux StdGen pour la génération aléatoire
+    --g <- newStdGen
+    --g' <- newStdGen
+    -- nombre de mines, lignes, colonnes
+    let nmines = 2
+    let l = 7
+    let c = 10
+    -- creer la grille, ajouter les mines, mettre a jour les voisins
+    --let mines = randSet nmines g g'
+    let g = grid l c [(0,0), (0,1)]
+    let gMines = neighbourMap (mines g)
+    loop 2 2 nmines (updateGrid g gMines); -- démarrer la REPL
 
 
